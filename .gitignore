@@ -1,0 +1,13 @@
+# Python-generated files
+__pycache__/
+*.py[cod]
+
+# Local environments and IDE settings
+.venv/
+.idea/
+
+# Test and packaging artifacts
+.coverage
+.pytest_cache/
+build/
+dist/

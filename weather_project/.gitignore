@@ -1,0 +1,7 @@
+# The selected location is private local app state, not a project default.
+config.json
+config.json.tmp
+
+# Python-generated files
+__pycache__/
+*.py[cod]

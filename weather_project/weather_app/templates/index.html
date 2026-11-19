@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weather Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="site-header{% if weather %} site-header--{{ weather.current.theme }}{% endif %}">
+    <div class="page-width">
+      <p class="eyebrow">LOCAL FORECAST</p>
+      <h1>Weather Dashboard</h1>
+      <p>Current conditions and a {{ forecast_days }}-day forecast.</p>
+    </div>
+  </header>
+
+  <main class="page-width">
+    <form class="location-form" method="post" action="{{ url_for('index') }}">
+      <label for="location">Search for a town or city</label>
+      <div class="search-row">
+        <input id="location" name="location" type="search" maxlength="100"
+               value="{{ location }}" placeholder="For example, Luton" required>
+        <button type="submit">Get weather</button>
+      </div>
+      <p class="hint">Your last searched location is saved on this computer.</p>
+    </form>
+
+    {% if message %}
+      <div class="notice" role="alert">{{ message }}</div>
+    {% endif %}
+
+    {% if weather %}
+      <section class="weather-section" aria-labelledby="location-heading">
+        <div class="location-title">
+          <div>
+            <p class="eyebrow">WEATHER IN</p>
+            <h2 id="location-heading">{{ weather.name }}{% if weather.country %}, {{ weather.country }}{% endif %}</h2>
+          </div>
+          <p class="updated">Local time zone: {{ weather.timezone }}</p>
+        </div>
+
+        <article class="current-card current-card--{{ weather.current.theme }}">
+          <div class="current-main">
+            <p class="eyebrow">CURRENT CONDITIONS</p>
+            <p class="current-temperature">{{ weather.current.temperature }}<span>°C</span></p>
+            <p class="conditions">{{ weather.current.description }}</p>
+            <p class="feels-like">Feels like {{ weather.current.feels_like }}°C</p>
+            <p class="feels-like">Local time: {{ weather.current.time }}</p>
+          </div>
+          <dl class="current-details">
+            <div><dt>Humidity</dt><dd>{{ weather.current.humidity }}%</dd></div>
+            <div><dt>Wind</dt><dd>{{ weather.current.wind_speed }} km/h</dd></div>
+          </dl>
+          <div class="weather-illustration weather-illustration--{{ weather.current.theme }}"
+               role="img" aria-label="{{ weather.current.visual_label }}">
+            <span class="weather-illustration__icon" aria-hidden="true">
+              {{ weather.current.icon }}
+            </span>
+            <span class="weather-illustration__caption">
+              {{ weather.current.visual_label }}
+            </span>
+            <span class="weather-illustration__rain" aria-hidden="true"></span>
+          </div>
+        </article>
+      </section>
+
+      <section class="recommendations-section" aria-labelledby="recommendations-heading">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">A LITTLE INSPIRATION</p>
+            <h2 id="recommendations-heading">What to wear &amp; do</h2>
+          </div>
+          <p class="hint">A couple of ideas for today's conditions</p>
+        </div>
+        <div class="recommendation-grid">
+          <article class="recommendation-card recommendation-card--wear">
+            <span class="recommendation-icon" aria-hidden="true">◈</span>
+            <div>
+              <p class="eyebrow">DRESS FOR THE DAY</p>
+              <h3>What to wear</h3>
+              <p>{{ weather.recommendations.clothing }}</p>
+            </div>
+          </article>
+          <article class="recommendation-card recommendation-card--activities">
+            <span class="recommendation-icon" aria-hidden="true">✳</span>
+            <div>
+              <p class="eyebrow">MAKE THE MOST OF IT</p>
+              <h3>Two ideas for today</h3>
+              <ol>
+                {% for activity in weather.recommendations.activities %}
+                  <li>{{ activity }}</li>
+                {% endfor %}
+              </ol>
+            </div>
+          </article>
+        </div>
+        <p class="recommendation-note">Suggestions are general ideas based on the current conditions.</p>
+      </section>
+
+      <section class="forecast-section" aria-labelledby="forecast-heading">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">PLAN AHEAD</p>
+            <h2 id="forecast-heading">{{ forecast_days }}-day forecast</h2>
+          </div>
+          <p class="hint">Temperatures in °C · precipitation in mm</p>
+        </div>
+        <div class="forecast-grid">
+          {% for day in weather.daily %}
+            <details class="forecast-card">
+              <summary class="forecast-day forecast-day--{{ day.theme }}">
+                <span class="forecast-day__icon" aria-hidden="true">{{ day.icon }}</span>
+                <span class="forecast-day__date">{{ day.date }}</span>
+                <span class="forecast-day__condition">{{ day.description }}</span>
+                <span class="temperature-range">
+                  <strong>{{ day.high }}°</strong>
+                  <span>{{ day.low }}°</span>
+                </span>
+                <span class="precipitation">Rain: {{ day.precipitation }} mm</span>
+                <span class="forecast-day__action">Click to view hourly details</span>
+              </summary>
+              <div class="hourly-forecast">
+                <h3>Hourly forecast · {{ day.date }}</h3>
+                <div class="hourly-grid">
+                  {% for hour in day.hours %}
+                    <article class="hour-card hour-card--{{ hour.theme }}">
+                      <p class="hour-card__time">{{ hour.time }}</p>
+                      <p class="hour-card__icon" aria-hidden="true">{{ hour.icon }}</p>
+                      <p class="hour-card__temperature">{{ hour.temperature }}°C</p>
+                      <p class="hour-card__condition">{{ hour.description }}</p>
+                      <dl>
+                        <div><dt>Feels like</dt><dd>{{ hour.feels_like }}°</dd></div>
+                        <div><dt>Rain chance</dt><dd>{{ hour.rain_chance }}%</dd></div>
+                        <div><dt>Rain</dt><dd>{{ hour.precipitation }} mm</dd></div>
+                        <div><dt>Wind</dt><dd>{{ hour.wind_speed }} km/h</dd></div>
+                      </dl>
+                    </article>
+                  {% endfor %}
+                </div>
+              </div>
+            </details>
+          {% endfor %}
+        </div>
+      </section>
+    {% else %}
+      <section class="empty-state">
+        <h2>Weather is not available right now</h2>
+        <p>Check your connection or search for another location and try again.</p>
+      </section>
+    {% endif %}
+
+    <footer>Forecast data provided by <a href="https://open-meteo.com/">Open-Meteo</a>.</footer>
+  </main>
+</body>
+</html>

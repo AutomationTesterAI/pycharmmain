@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sales Explorer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="page-header">
+    <div class="page-width">
+      <h1>Sales Explorer</h1>
+      <p>Explore and filter records from <code>messy_sales.csv</code>.</p>
+    </div>
+  </header>
+
+  <main class="page-width">
+    <form class="filters card" method="get" action="{{ url_for('index') }}">
+      <label for="region">Region</label>
+      <select id="region" name="region">
+        <option value="">All regions</option>
+        {% for region in regions %}
+          <option value="{{ region }}" {% if region == selected_region %}selected{% endif %}>
+            {{ region }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <label for="search">Search records</label>
+      <input id="search" type="search" name="q" value="{{ search_query }}"
+             placeholder="Product, salesperson, order ID, or category">
+      <button type="submit">Apply filters</button>
+      <a class="clear-link" href="{{ url_for('index') }}">Clear filters</a>
+    </form>
+
+    <section class="summary-grid" aria-label="Sales summary">
+      <article class="card">
+        <h2>Matching records</h2>
+        <p class="total">{{ summary.record_count }}</p>
+        <p class="muted">of {{ total_records }} total records</p>
+      </article>
+      <article class="card">
+        <h2>Records by region</h2>
+        <ul class="count-list">
+          {% for region, count in summary.region_counts.items() %}
+            <li><span>{{ region }}</span><strong>{{ count }}</strong></li>
+          {% else %}
+            <li>No matching records</li>
+          {% endfor %}
+        </ul>
+      </article>
+      <article class="card">
+        <h2>Records by product</h2>
+        <ul class="count-list">
+          {% for product, count in summary.product_counts.items() %}
+            <li><span>{{ product }}</span><strong>{{ count }}</strong></li>
+          {% else %}
+            <li>No matching records</li>
+          {% endfor %}
+        </ul>
+      </article>
+    </section>
+
+    <section aria-labelledby="records-heading">
+      <div class="section-heading">
+        <h2 id="records-heading">Sales records</h2>
+        <p class="muted">Showing {{ sales|length }} records</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>{% for header in headers %}<th scope="col">{{ header }}</th>{% endfor %}</tr>
+          </thead>
+          <tbody>
+            {% for sale in sales %}
+              <tr>
+                {% for header in headers %}
+                  <td>{{ sale.get(header, '')|trim or '—' }}</td>
+                {% endfor %}
+              </tr>
+            {% else %}
+              <tr>
+                <td class="empty" colspan="{{ headers|length or 1 }}">
+                  No matching sales records.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
